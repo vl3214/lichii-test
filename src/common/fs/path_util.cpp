@@ -143,7 +143,7 @@ public:
         }
 #define LEGACY_PATH(titleName, upperName) GenerateLegacyPath(EmuPath::titleName##Dir, GetDataDirectory("XDG_DATA_HOME") / upperName##_DIR); \
         GenerateLegacyPath(EmuPath::titleName##ConfigDir, GetDataDirectory("XDG_CONFIG_HOME") / upperName##_DIR); \
-        GenerateLegacyPath(EmuPath::titleName##CacheDir, GetDataDirectory("XDG_CACHE_HOME") / upperName##_DIR);
+        GenerateLegacyPath(EmuPath::titleName##CacheDir, GetDataDirectory("XDG_CONFIG_HOME") / upperName##_DIR / CACHE_DIR);
         LEGACY_PATH(Citron, CITRON)
         LEGACY_PATH(Sudachi, SUDACHI)
         LEGACY_PATH(Yuzu, YUZU)
@@ -366,6 +366,20 @@ fs::path GetHomeDirectory() {
     return fs::path{pw->pw_dir};
 }
 
+fs::path GetExeDirectory() {
+#if defined(__linux__)
+    std::error_code ec;
+    const fs::path exe = fs::read_symlink("/proc/self/exe", ec);
+    if (!ec) {
+        return exe.parent_path();
+    }
+    LOG_ERROR(Common_Filesystem, "Failed to resolve /proc/self/exe, falling back to cwd");
+    return fs::current_path();
+#else
+    return fs::current_path();
+#endif
+}
+
 fs::path GetDataDirectory(const std::string& env_name) {
     const char* data_env_var = getenv(env_name.c_str());
 
@@ -519,7 +533,8 @@ std::string SanitizePath(std::string_view path_, DirectorySeparator directory_se
 
         const auto is_unc = [](std::string_view part) {
             return part.size() == 3 && (part[0] == 'U' || part[0] == 'u') &&
-                   (part[1] == 'N' || part[1] == 'n') && (part[2] == 'C' || part[2] == 'c');
+                   (part[1] == 'N' || part[1] == 'n') &&
+                   (part[2] == 'C' || part[2] == 'c');
         };
         if (path_parts.size() >= 2 && path_parts[0] == "?" && is_unc(path_parts[1])) {
             root_component_count = 4;
