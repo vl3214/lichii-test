@@ -308,7 +308,7 @@ void SetEdenPath(EdenPath eden_path, const Path& new_path) {
  * @returns The path of the current user's home directory.
  */
 [[nodiscard]] std::filesystem::path GetHomeDirectory();
-
+[[nodiscard]] std::filesystem::path GetExeDirectory();
 /**
  * Gets the relevant paths for yuzu to store its data based on the given XDG environment variable.
  * See https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
