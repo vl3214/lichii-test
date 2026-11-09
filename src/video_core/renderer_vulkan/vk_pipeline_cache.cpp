@@ -98,6 +98,10 @@
 #include "../../android/app/src/main/jni/android_settings.h"
 #endif
 
+#ifdef Status
+#undef Status
+#endif
+
 namespace Vulkan {
 
 namespace {
